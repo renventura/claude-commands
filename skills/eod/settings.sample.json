@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Agent",
+      "Bash(date:*)",
+      "Bash(find:*)",
+      "Bash(~/.claude/eod/log-issue.sh:*)",
+      "Read",
+      "mcp__claude_ai_Google_Calendar__list_events",
+      "mcp__claude_ai_Linear",
+      "mcp__claude_ai_Slack__slack_read_thread",
+      "mcp__claude_ai_Slack__slack_read_user_profile",
+      "mcp__claude_ai_Slack__slack_search_public_and_private",
+      "mcp__claude_ai_Slack__slack_send_message",
+      "mcp__claude_ai_Slack__slack_send_message_draft"
+    ]
+  }
+}
