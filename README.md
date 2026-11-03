@@ -7,8 +7,10 @@ Shared [Claude Code](https://claude.com/claude-code) slash commands and skills f
 Copy (or symlink) the file you want into your own `~/.claude/commands/` directory:
 
 ```sh
-cp commands/eod.md ~/.claude/commands/eod.md
+cp commands/<name>.md ~/.claude/commands/<name>.md
 ```
+
+Some commands come with an installer for their supporting files (see `/eod` below).
 
 Claude Code picks up anything in that directory as a `/command-name` slash command — no restart needed.
 
@@ -16,12 +18,23 @@ Claude Code picks up anything in that directory as a `/command-name` slash comma
 
 ### `/eod`
 
-Scans today's local Claude Code session transcripts, summarizes what you actually worked on (with Linear ticket keys where applicable), pulls today's calendar meetings, and creates a Slack **draft** (never auto-sent) in `#software-eod`.
+Builds an end-of-day report covering everything since your last `/eod` run and saves it as a Slack **draft** (never auto-sent) in `#software-eod`. It pulls from:
+- a log of Linear issues Claude records as you work on them
+- your local Claude Code session transcripts
+- substantial Slack conversations you took part in
+- your Google Calendar meetings
 
-Requirements:
-- Slack and Google Calendar MCP connections (`/mcp` to connect if missing — the command will tell you if either is missing when you run it).
-- It resolves your own Slack user ID at runtime (never hardcoded), so it's safe to use as-is.
-- The target channel (`#software-eod`) is hardcoded to this team's shared status channel. If you're adapting this command for a different team/channel, update the `channel_id` in Step 5.
+The report is grouped by project under TODAY, FLAGS and NEXT.
+
+`/eod` needs a logging script and a CLAUDE.md rule alongside the command, so install it with the installer rather than copying the file:
+
+```sh
+./eod/install.sh
+```
+
+The installer symlinks the command and script into `~/.claude` and appends the logging rule to `~/.claude/CLAUDE.md`. It backs up any file it replaces and is safe to re-run. Then merge the permissions from `eod/settings.sample.json` into `~/.claude/settings.json`.
+
+Requirements: macOS, and the Slack, Google Calendar and Linear connectors (`/mcp`). It resolves your Slack user ID at runtime, so it's safe to use as-is. The target channel (`#software-eod`) is hardcoded; change the `channel_id` in the command if you adapt it for another team. See [`eod/README.md`](eod/README.md) for details, including runtime state and how to reset the report window.
 
 ## Skills
 

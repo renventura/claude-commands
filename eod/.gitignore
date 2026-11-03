@@ -1,0 +1,5 @@
+# Runtime state written by /eod and log-issue.sh. Lives in ~/.claude/eod, never here.
+linear-log.tsv
+linear-log.tsv.tmp
+last-run
+*.bak
