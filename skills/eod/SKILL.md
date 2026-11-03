@@ -1,4 +1,6 @@
 ---
+name: eod
+disable-model-invocation: true
 description: Build the EOD report (everything since the last /eod run) from the Linear issue log and local Claude Code sessions and create a Slack draft in #software-eod
 ---
 

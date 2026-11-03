@@ -1,55 +1,71 @@
 # claude-commands
 
-Shared [Claude Code](https://claude.com/claude-code) slash commands and skills for the team. Add more as they come up.
+Shared [Claude Code](https://claude.com/claude-code) skills for the team. Add more as they come up.
 
-## Installing a command
+## Install
 
-Copy (or symlink) the file you want into your own `~/.claude/commands/` directory:
+Clone the repo and run the installer:
 
 ```sh
-cp commands/<name>.md ~/.claude/commands/<name>.md
+git clone https://github.com/renventura/claude-commands.git ~/Sites/claude-commands
+cd ~/Sites/claude-commands
+./install.sh                 # every skill
+./install.sh eod             # or just the ones you name
 ```
 
-Some commands come with an installer for their supporting files (see `/eod` below).
+The installer symlinks each skill folder into `~/.claude/skills/`, so `git pull` updates
+your installed skills in place. Some skills need more than the folder (a script in
+`~/.claude`, a rule in `~/.claude/CLAUDE.md`); those have a `setup.sh` that the installer
+runs for them. Re-running is safe. Anything already at a skill's install path is moved to
+`~/.claude/skills-backup/` first.
 
-Claude Code picks up anything in that directory as a `/command-name` slash command — no restart needed.
+Claude Code picks up new skills without a restart. Run a skill as `/skill-name`. Most
+skills also start on their own when your request matches them.
 
-## Commands
+## Skills
 
-### `/eod`
+| Skill | What it does |
+|---|---|
+| [`eod`](skills/eod/README.md) | `/eod`: end-of-day report saved as a Slack draft in `#software-eod` |
+| [`candidate-interview-prep`](skills/candidate-interview-prep/README.md) | Interview prep for engineering candidates: PDF report plus an interactive HTML page |
 
-Builds an end-of-day report covering everything since your last `/eod` run and saves it as a Slack **draft** (never auto-sent) in `#software-eod`. It pulls from:
+### `eod`
+
+Builds an end-of-day report covering everything since your last `/eod` run and saves it
+as a Slack **draft** (never auto-sent) in `#software-eod`. It pulls from:
 - a log of Linear issues Claude records as you work on them
 - your local Claude Code session transcripts
 - substantial Slack conversations you took part in
 - your Google Calendar meetings
 
-The report is grouped by project under TODAY, FLAGS and NEXT.
+The report is grouped by project under TODAY, FLAGS and NEXT. It only runs when you type
+`/eod`.
 
-`/eod` needs a logging script and a CLAUDE.md rule alongside the command, so install it with the installer rather than copying the file:
-
-```sh
-./eod/install.sh
-```
-
-The installer symlinks the command and script into `~/.claude` and appends the logging rule to `~/.claude/CLAUDE.md`. It backs up any file it replaces and is safe to re-run. Then merge the permissions from `eod/settings.sample.json` into `~/.claude/settings.json`.
-
-Requirements: macOS, and the Slack, Google Calendar and Linear connectors (`/mcp`). It resolves your Slack user ID at runtime, so it's safe to use as-is. The target channel (`#software-eod`) is hardcoded; change the `channel_id` in the command if you adapt it for another team. See [`eod/README.md`](eod/README.md) for details, including runtime state and how to reset the report window.
-
-## Skills
-
-Skills live in `skills/`. Each is a folder with a `SKILL.md`. Install one by symlinking (or copying) its folder into `~/.claude/skills/`:
-
-```sh
-ln -s "$PWD/skills/candidate-interview-prep" ~/.claude/skills/candidate-interview-prep
-```
-
-Claude Code uses a skill automatically when your request matches it, or you can invoke it as `/skill-name`.
+- **Setup:** `setup.sh` links the issue-logging script into `~/.claude/eod/`, adds the
+  logging rule to `~/.claude/CLAUDE.md`, and removes the old `/eod` slash command if you
+  had it.
+- **Permissions:** merge them from `skills/eod/settings.sample.json` into
+  `~/.claude/settings.json` by hand.
+- **Requirements:** macOS, and the Slack, Google Calendar and Linear connectors (`/mcp`).
+- **Channel:** `#software-eod` is hardcoded. Change the `channel_id` in `SKILL.md` if you
+  adapt it for another team.
 
 ### `candidate-interview-prep`
 
-Prepares you to interview an engineering candidate. Give it the candidate's resume, cover letter and any other files, plus the job posting (link or file). It produces:
-- a PDF with a scored fit assessment, strengths and concerns, an interview plan, and questions tailored to the candidate, each with example answers
-- an interactive HTML version with a sidebar for picking questions, taking notes and tracking what you've asked during the interview
+Give it a candidate's resume, cover letter and any other files, plus the job posting
+(link or file). It produces:
+- a PDF with a scored fit assessment, strengths and concerns, an interview plan, and
+  questions tailored to the candidate, each with example answers
+- an interactive HTML version with a sidebar for picking questions, taking notes and
+  tracking what you've asked during the interview
 
-Supports a per-person interviewer profile (your specialty, interview length, output folder). Requires Google Chrome and `python3`. See [`skills/candidate-interview-prep/README.md`](skills/candidate-interview-prep/README.md) for setup and details.
+It also supports a per-person interviewer profile (your specialty, interview length,
+output folder). Requires Google Chrome and `python3`.
+
+![Interview prep sidebar](skills/candidate-interview-prep/docs/screenshot.png)
+
+## Adding a skill
+
+Create `skills/<name>/` with a `SKILL.md` (frontmatter `name` and `description`, then the
+instructions), plus a `README.md` for people. If it needs anything installed outside its
+own folder, add a `setup.sh` that does it idempotently. Then add it to the table above.

@@ -1,6 +1,6 @@
-# /eod
+# eod
 
-The `/eod` Claude Code command: builds an end-of-day report covering everything since the previous `/eod` run, then saves it as a Slack **draft** in #software-eod for review. It never sends the report itself.
+The `/eod` Claude Code skill: builds an end-of-day report covering everything since the previous `/eod` run, then saves it as a Slack **draft** in #software-eod for review. It never sends the report itself. It only runs when you type `/eod`; Claude won't start it on its own.
 
 The report pulls from four sources:
 
@@ -13,27 +13,33 @@ It's grouped by project under three sections: TODAY, FLAGS and NEXT.
 
 ## Layout
 
-| Path | Installed to | What it is |
-|---|---|---|
-Paths are relative to the repo root.
+Paths are relative to this folder (`skills/eod/`).
 
 | Path | Installed to | What it is |
 |---|---|---|
-| `commands/eod.md` | `~/.claude/commands/eod.md` | The `/eod` command itself |
-| `eod/log-issue.sh` | `~/.claude/eod/log-issue.sh` | Appends a Linear issue to the running log |
-| `eod/claude-md-rule.md` | appended to `~/.claude/CLAUDE.md` | The rule telling Claude to log Linear work as it happens |
-| `eod/settings.sample.json` | merge into `~/.claude/settings.json` | Permissions the command uses, so it runs without prompts |
-| `eod/install.sh` | | Links the files above into `~/.claude` and adds the CLAUDE.md rule |
+| `SKILL.md` | `~/.claude/skills/eod` (the folder is linked) | The `/eod` skill itself |
+| `scripts/log-issue.sh` | `~/.claude/eod/log-issue.sh` | Appends a Linear issue to the running log |
+| `claude-md-rule.md` | appended to `~/.claude/CLAUDE.md` | The rule telling Claude to log Linear work as it happens |
+| `settings.sample.json` | merge into `~/.claude/settings.json` | Permissions the skill uses, so it runs without prompts |
+| `setup.sh` | | Extra setup, run by the repo's `install.sh` (see below) |
 
 ## Install
 
+From the repo root:
+
 ```
-./eod/install.sh
+./install.sh eod
 ```
 
-This symlinks `~/.claude/commands/eod.md` and `~/.claude/eod/log-issue.sh` to this repo, so edits here go live immediately. It appends the logging rule to `~/.claude/CLAUDE.md` only if it isn't there yet. Any existing file it would replace is moved to `<file>.bak` first. It's safe to re-run.
+This links `~/.claude/skills/eod` to this folder, then runs `setup.sh`, which:
 
-`install.sh` doesn't touch `settings.json`. Merge the `permissions.allow` entries from `eod/settings.sample.json` into `~/.claude/settings.json` by hand.
+- links `~/.claude/eod/log-issue.sh` to `scripts/log-issue.sh`
+- removes an old `~/.claude/commands/eod.md` slash command, which would clash with the skill. A symlink is deleted; a real file is moved to `eod.md.bak`.
+- appends the logging rule to `~/.claude/CLAUDE.md`, only if it isn't there yet
+
+Because everything is linked, a `git pull` updates the skill in place. It's safe to re-run.
+
+The installer doesn't touch `settings.json`. Merge the `permissions.allow` entries from `settings.sample.json` into `~/.claude/settings.json` by hand.
 
 ## Requirements
 

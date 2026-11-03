@@ -5,6 +5,12 @@ candidate's files (resume, cover letter, portfolio, anything else) and the job p
 (a link or a file). It produces an interview prep report as a PDF for reading beforehand,
 plus an interactive HTML version to run the interview from.
 
+![The HTML report: questions on the left, the "My questions" sidebar on the right](docs/screenshot.png)
+
+*The HTML report, with three questions picked into the sidebar. To try the sidebar
+yourself, open [`docs/example-report.html`](docs/example-report.html) in a browser; the
+candidate in it is fictional.*
+
 ## What's in the report
 
 - **Pre-interview assessment:** a 1-5 score and a lean (Strong yes ... Strong no), with
@@ -61,16 +67,14 @@ Open the `.html` report in a browser:
 
 ## Install
 
-Clone the repo, then symlink the skill into your Claude Code skills directory. With a
-symlink, `git pull` keeps your copy up to date:
+Clone the repo and run the installer from its root. It symlinks the skill into
+`~/.claude/skills/`, so `git pull` keeps your copy up to date:
 
 ```sh
 git clone https://github.com/renventura/claude-commands.git ~/Sites/claude-commands
-mkdir -p ~/.claude/skills
-ln -s ~/Sites/claude-commands/skills/candidate-interview-prep ~/.claude/skills/candidate-interview-prep
+cd ~/Sites/claude-commands
+./install.sh candidate-interview-prep
 ```
-
-Or copy the folder instead (`cp -R skills/candidate-interview-prep ~/.claude/skills/`).
 
 ### Set up your interviewer profile (recommended)
 
@@ -123,6 +127,7 @@ candidate-interview-prep/
 ├── SKILL.md                                 instructions Claude follows
 ├── README.md                                this file
 ├── assets/report-template.html              report layout, styles and sidebar script
+├── docs/                                    README screenshot and a fictional example report
 ├── references/default-topics.md             topics included in every interview
 ├── references/interviewer-profile.example.md
 └── scripts/
