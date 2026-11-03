@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Replace with: <Candidate Name> — <Role> interview prep -->
+<title>CANDIDATE — ROLE interview prep</title>
+<style>
+  @page { size: Letter; margin: 0.7in 0.7in 0.75in; }
+  :root {
+    --ink: #1d2433; --muted: #5b6475; --line: #dde2ea; --soft: #f5f7fa;
+    --accent: #2c5cc5; --strong: #1f7a4d; --partial: #a66a00; --none: #b3261e;
+    --side-w: 400px;
+  }
+  * { box-sizing: border-box; }
+  body { font: 10.5pt/1.5 -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); margin: 0; background: #fff; }
+  h1 { font-size: 20pt; margin: 0 0 2pt; letter-spacing: -0.01em; }
+  h2 { font-size: 13.5pt; margin: 22pt 0 8pt; padding-bottom: 4pt; border-bottom: 2px solid var(--ink); break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 6pt; break-after: avoid; }
+  p { margin: 0 0 7pt; }
+  ul { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  .meta { color: var(--muted); margin-bottom: 14pt; }
+  .meta a { color: var(--accent); text-decoration: none; }
+
+  /* Score summary box */
+  .verdict { display: flex; gap: 14pt; align-items: stretch; border: 1px solid var(--line); border-radius: 6pt; padding: 12pt; background: var(--soft); break-inside: avoid; }
+  .score { min-width: 74pt; text-align: center; border-right: 1px solid var(--line); padding-right: 14pt; }
+  .score .num { font-size: 28pt; font-weight: 700; line-height: 1; }
+  .score .of { color: var(--muted); font-size: 9pt; }
+  .score .lean { margin-top: 6pt; font-weight: 600; font-size: 9.5pt; }
+  .verdict .why p:last-child { margin-bottom: 0; }
+
+  /* Fit table */
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 8pt; }
+  th, td { text-align: left; vertical-align: top; padding: 5pt 6pt; border-bottom: 1px solid var(--line); }
+  th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+  tr { break-inside: avoid; }
+  td.req { width: 34%; font-weight: 500; }
+  td.rating { width: 13%; white-space: nowrap; }
+  .badge { display: inline-block; font-size: 8pt; font-weight: 700; padding: 1pt 6pt; border-radius: 8pt; color: #fff; }
+  .badge.strong { background: var(--strong); }
+  .badge.partial { background: var(--partial); }
+  .badge.none { background: var(--none); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14pt; }
+  .two-col > div { break-inside: avoid; }
+
+  /* Topics and questions */
+  .topic { margin-top: 16pt; }
+  .topic .goal { color: var(--muted); font-style: italic; margin-bottom: 8pt; }
+  .q { position: relative; border-left: 3px solid var(--accent); padding: 4pt 0 4pt 10pt; margin: 0 0 12pt; break-inside: avoid; }
+  .q .ask { font-weight: 600; margin-bottom: 3pt; }
+  .q.iftime { border-left-color: var(--line); }
+  .tag { display: inline-block; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 5pt; border-radius: 3pt; margin-right: 5pt; vertical-align: 1pt; }
+  .tag.core { background: var(--accent); color: #fff; }
+  .tag.iftime { background: var(--soft); color: var(--muted); border: 1px solid var(--line); }
+  .follow { margin: 2pt 0 3pt; color: var(--ink); }
+  .follow::before { content: "Follow-up: "; font-weight: 600; color: var(--muted); }
+  .listen { font-size: 9.5pt; color: var(--muted); margin: 0; }
+  .listen b { color: var(--strong); }
+  .flag { font-size: 9.5pt; color: var(--muted); margin: 2pt 0 0; }
+  .flag b { color: var(--none); }
+  .q .notes { height: 34pt; border-bottom: 1px dotted var(--line); margin-top: 4pt; }
+
+  /* Extra per-question context: other phrasings, example answers, nudges */
+  .more { font-size: 9.5pt; color: var(--ink); background: var(--soft); border-radius: 4pt; padding: 6pt 8pt; margin: 5pt 0 2pt; }
+  .more > div { margin-bottom: 4pt; }
+  .more > div:last-child { margin-bottom: 0; }
+  .more b { color: var(--muted); }
+  .more ul { margin: 1pt 0 0; }
+  .more li { margin-bottom: 1pt; }
+  .more .strong-ans b { color: var(--strong); }
+
+  .plan td:first-child { width: 22%; white-space: nowrap; font-weight: 600; }
+  .footer-note { margin-top: 20pt; font-size: 8.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6pt; }
+
+  /* ---------- Browser view only (print/PDF margins come from @page) ---------- */
+  .pick, .more-toggle, .picked, .fab { display: none; }
+  @media screen {
+    html { background: #e9ecf1; }
+    body { max-width: 8.5in; margin: 24px auto; padding: 0.7in; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); border-radius: 4px; }
+    button { font: inherit; cursor: pointer; }
+
+    /* "Ask this" toggle on each question */
+    .q { padding-right: 96px; }
+    .pick { display: block; position: absolute; top: 2px; right: 0; font-size: 12px; padding: 3px 9px; border-radius: 12px; border: 1px solid var(--line); background: #fff; color: var(--muted); }
+    .pick:hover { border-color: var(--accent); color: var(--accent); }
+    .q.is-picked { background: #eef3fd; border-left-color: var(--accent); }
+    .q.is-picked .pick { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .q.flash { animation: flash 1.2s ease-out; }
+    @keyframes flash { 0% { background: #ffe9a8; } 100% { background: transparent; } }
+
+    .more-toggle { display: inline-block; margin: 4px 0 0; font-size: 12px; padding: 0; border: 0; background: none; color: var(--accent); }
+    .more-toggle::before { content: "▸ "; }
+    .more-toggle.open::before { content: "▾ "; }
+    .more.collapsed { display: none; }
+    .q .notes { display: none; }
+
+    /* Selected-questions sidebar */
+    .picked { display: flex; flex-direction: column; position: fixed; top: 0; right: 0; bottom: 0; width: min(var(--side-w), 100vw); background: #fff; border-left: 1px solid var(--line); z-index: 20; font-size: 13px; line-height: 1.45; }
+    .picked-head { padding: 12px 14px 10px; border-bottom: 1px solid var(--line); background: var(--soft); }
+    .picked-title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .picked-title b { font-size: 15px; }
+    .picked-meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .picked-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .picked-actions button { font-size: 12px; padding: 3px 9px; border-radius: 4px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
+    .picked-actions button:hover { border-color: var(--accent); color: var(--accent); }
+    .picked-actions .close { margin-left: auto; }
+    .picked-list { flex: 1; overflow-y: auto; padding: 10px 12px 24px; }
+    .picked-empty { color: var(--muted); padding: 16px 14px; margin: 0; }
+    .picked-note { color: var(--muted); font-size: 11px; padding: 6px 14px 10px; border-top: 1px solid var(--line); margin: 0; }
+
+    .card { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 4px; padding: 8px 10px; margin-bottom: 10px; background: #fff; }
+    .card.iftime { border-left-color: #b9c2d0; }
+    .card.asked { opacity: .6; }
+    .card-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .card-bar .id { font-weight: 700; color: var(--accent); border: 0; background: none; padding: 0; text-decoration: underline dotted; }
+    .card .ask .tag { display: none; }
+    .grip { cursor: grab; color: #9aa3b2; font-size: 15px; line-height: 1; padding: 0 2px; user-select: none; }
+    .grip:hover { color: var(--ink); }
+    .card.dragging { opacity: .4; }
+    .card.drop-before { box-shadow: 0 -3px 0 0 var(--accent); }
+    .card.drop-after { box-shadow: 0 3px 0 0 var(--accent); }
+    .card-bar .cat { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; font-weight: 600; color: var(--ink); background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 1px 8px; }
+    .card-bar label { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; margin-left: 4px; cursor: pointer; }
+    .card-bar .spacer { flex: 1; }
+    .card-bar .icon { border: 0; background: none; color: var(--muted); padding: 0 3px; font-size: 13px; }
+    .card-bar .icon:hover { color: var(--ink); }
+    .card .ask { font-weight: 600; margin-bottom: 4px; }
+    .card .detail { font-size: 12.5px; }
+    .card .listen, .card .flag { font-size: 12.5px; }
+    .card .more { font-size: 12.5px; }
+    .card.collapsed .detail { display: none; }
+    .card textarea { width: 100%; min-height: 48px; margin-top: 6px; font: inherit; font-size: 12.5px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 4px; resize: vertical; }
+
+    .fab { position: fixed; right: 16px; bottom: 16px; z-index: 19; padding: 9px 14px; border-radius: 20px; border: 0; background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.2); font-size: 13px; }
+  }
+  /* Wide screens: sidebar always visible, page shifts left */
+  @media screen and (min-width: 1240px) {
+    html { padding-right: var(--side-w); }
+    .picked-actions .close { display: none; }
+  }
+  /* Narrower screens: sidebar is a drawer opened from the floating button */
+  @media screen and (max-width: 1239px) {
+    .picked { transform: translateX(100%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
+    html.drawer-open .picked { transform: none; visibility: visible; box-shadow: -4px 0 16px rgba(0,0,0,.12); }
+    .fab { display: block; }
+  }
+  @media screen and (max-width: 8.6in) {
+    body { margin: 0; padding: 16px; border-radius: 0; box-shadow: none; }
+    .q { padding-right: 0; padding-top: 30px; }
+    .pick { left: 10px; right: auto; }
+  }
+  @media print {
+    .pick, .more-toggle, .picked, .fab { display: none !important; }
+    .more, .more.collapsed { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<h1>CANDIDATE NAME</h1>
+<div class="meta">
+  ROLE TITLE · <a href="JOB_URL">job posting</a> · Prepared YYYY-MM-DD<br>
+  Materials reviewed: Resume, Cover letter
+</div>
+
+<!-- ===== 1. Pre-interview assessment =====
+     Score 1-5 and lean (Strong yes / Lean yes / Unsure / Lean no / Strong no).
+     Rationale: 2-3 sentences, then what the interview most needs to confirm or rule out. -->
+<h2>Pre-interview assessment</h2>
+<div class="verdict">
+  <div class="score">
+    <div class="num">4</div><div class="of">out of 5</div>
+    <div class="lean">Lean yes</div>
+  </div>
+  <div class="why">
+    <p>Rationale...</p>
+    <p><b>The interview needs to establish:</b> ...</p>
+  </div>
+</div>
+
+<!-- Claims checked against the candidate's own links: what was verified, what didn't hold up, what wasn't checked. Omit if no links. -->
+<h3>Links checked</h3>
+<ul><li><b>Verified:</b> ... </li><li><b>Not supported:</b> ...</li><li><b>Not checked:</b> ...</li></ul>
+
+<!-- One-paragraph candidate snapshot: current role, years of experience, career arc, what they're known for. -->
+<h3>Candidate snapshot</h3>
+<p>...</p>
+
+<!-- ===== 2. Fit vs. requirements =====
+     One table for must-haves (include core expectations from the Responsibilities section as rows, labelled "(Responsibility)"), one for nice-to-haves.
+     Badge classes: strong | partial | none (label "Not evident" for none). -->
+<h2>Fit against the role</h2>
+<h3>Must-haves</h3>
+<table>
+  <tr><th>Requirement</th><th>Rating</th><th>Evidence</th></tr>
+  <tr>
+    <td class="req">Requirement text</td>
+    <td class="rating"><span class="badge strong">Strong</span></td>
+    <td>Resume: ...</td>
+  </tr>
+</table>
+<h3>Nice-to-haves</h3>
+<table>
+  <tr><th>Requirement</th><th>Rating</th><th>Evidence</th></tr>
+  <tr>
+    <td class="req">Requirement text</td>
+    <td class="rating"><span class="badge partial">Partial</span></td>
+    <td>...</td>
+  </tr>
+</table>
+
+<!-- ===== 3. Strengths and concerns ===== -->
+<h2>Strengths and things to probe</h2>
+<div class="two-col">
+  <div>
+    <h3>Strengths</h3>
+    <ul><li>...</li></ul>
+  </div>
+  <div>
+    <h3>Concerns to probe</h3>
+    <ul><li>... <i>(probed in Topic N)</i></li></ul>
+  </div>
+</div>
+
+<!-- ===== 4. Interview plan ===== -->
+<h2>Interview plan</h2>
+<table class="plan">
+  <tr><td>0–5 min</td><td>Intro, set expectations</td></tr>
+  <!-- One row per topic block with its Core questions, about 6 min per Core question. End with a note on what to cut first if running long. -->
+  <tr><td>5–17 min</td><td>Topic 1 + Topic 2: Core questions 1a, 2a</td></tr>
+  <tr><td>...</td><td>...</td></tr>
+  <tr><td>50–60 min</td><td>Candidate questions</td></tr>
+</table>
+<p><b>If running long, cut first:</b> ...</p>
+
+<!-- ===== 5. Topics and questions =====
+     Repeat .topic per topic. Each topic: a one-line goal, then 2-4 .q blocks.
+     data-short on .topic: a 1-3 word category label shown on sidebar cards (e.g. "Performance & scaling").
+     Number every question "<topic><letter>." at the start of .ask (1a., 1b., 2a. ...); the
+     selection sidebar uses that number as the question's ID.
+     Mark each question Core or If time: <div class="q"> + tag.core, or <div class="q iftime"> + tag.iftime.
+     .follow and .flag are optional. .more is required; its .nudge line is optional.
+     Keep .notes (blank space in the PDF for handwritten notes). -->
+<h2>Topics and questions</h2>
+
+<div class="topic" data-short="Short label">
+  <h3>1. Topic name</h3>
+  <div class="goal">What this topic is meant to reveal.</div>
+
+  <div class="q">
+    <div class="ask"><span class="tag core">Core</span>1a. Question tied to the candidate's experience?</div>
+    <div class="follow">Deeper follow-up or added constraint.</div>
+    <p class="listen"><b>Listen for:</b> ...</p>
+    <p class="flag"><b>Red flag:</b> ...</p>
+    <div class="more">
+      <div class="rephrase"><b>Other ways to ask:</b>
+        <ul><li>A plainer or more open version.</li><li>A version framed as a concrete scenario.</li></ul>
+      </div>
+      <div class="ok-ans"><b>Acceptable answer:</b> what a competent mid-level answer sounds like, with a concrete example.</div>
+      <div class="strong-ans"><b>Strong answer:</b> what sets a senior answer apart, with a concrete, practical example (tools, numbers, steps).</div>
+      <div class="nudge"><b>If they're stuck:</b> a hint that unblocks them without giving the answer away.</div>
+    </div>
+    <div class="notes"></div>
+  </div>
+</div>
+
+<!-- ===== 6. Likely candidate questions ===== -->
+<h2>Questions they'll likely ask us</h2>
+<ul><li>... — <i>why we expect it (e.g. cover letter mentions ...)</i></li></ul>
+
+<div class="footer-note">Pre-interview assessment based only on submitted materials. Confidential; for the hiring team.</div>
+
+<!-- Question picker and sidebar. Copy this script unchanged into every report. -->
+<script>
+(function () {
+  var KEY = 'interview-prep:' + location.pathname;
+  var MIN_PER_Q = 6;
+  var state = { order: [], asked: {}, notes: {}, expanded: {}, moreOpen: {} };
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && Array.isArray(saved.order)) state = { order: saved.order, asked: saved.asked || {}, notes: saved.notes || {}, expanded: saved.expanded || {}, moreOpen: saved.moreOpen || {} };
+  } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function makeToggle(more, startOpen, onChange) {
+    var t = el('button', 'more-toggle', 'Phrasings & example answers');
+    t.type = 'button';
+    if (!startOpen) more.classList.add('collapsed'); else t.classList.add('open');
+    t.addEventListener('click', function () { more.classList.toggle('collapsed'); t.classList.toggle('open'); if (onChange) onChange(!more.classList.contains('collapsed')); });
+    more.parentNode.insertBefore(t, more);
+  }
+
+  var questions = [].slice.call(document.querySelectorAll('.q'));
+  var byId = {};
+  questions.forEach(function (q, i) {
+    var ask = q.querySelector('.ask');
+    var text = ask ? ask.textContent.replace(/^\s*(Core|If time)\s*/i, '') : '';
+    var m = text.match(/^\s*(\d+[a-z]+)\./i);
+    var id = q.getAttribute('data-id') || (m ? m[1] : 'q' + (i + 1));
+    q.setAttribute('data-id', id);
+    if (!q.id) q.id = 'q-' + id;
+    byId[id] = q;
+    var more = q.querySelector('.more');
+    if (more) makeToggle(more, false);
+    var b = el('button', 'pick'); b.type = 'button';
+    b.addEventListener('click', function () { toggle(id); });
+    q.insertBefore(b, q.firstChild);
+  });
+  state.order = state.order.filter(function (id) { return byId[id]; });
+
+  // Sidebar
+  var side = el('aside', 'picked');
+  var head = el('div', 'picked-head');
+  var title = el('div', 'picked-title');
+  title.appendChild(el('b', null, 'My questions'));
+  var meta = el('div', 'picked-meta');
+  var actions = el('div', 'picked-actions');
+  [['core', 'Add all Core'], ['expand', 'Expand all'], ['copy', 'Copy notes'], ['clear', 'Clear'], ['close', 'Close']].forEach(function (a) {
+    var btn = el('button', a[0] === 'close' ? 'close' : '', a[1]); btn.type = 'button'; btn.setAttribute('data-a', a[0]); actions.appendChild(btn);
+  });
+  head.appendChild(title); head.appendChild(meta); head.appendChild(actions);
+  var list = el('div', 'picked-list');
+  var empty = el('p', 'picked-empty', 'Click "Ask this" on any question to add it here. Selected questions stay in this panel, in the order you pick them, so you can run the interview from here.');
+  var note = el('p', 'picked-note', 'Selections, "asked" checks and notes are saved in this browser only.');
+  side.appendChild(head); side.appendChild(empty); side.appendChild(list); side.appendChild(note);
+  document.body.appendChild(side);
+  var fab = el('button', 'fab'); fab.type = 'button';
+  fab.addEventListener('click', function () { document.documentElement.classList.toggle('drawer-open'); });
+  document.body.appendChild(fab);
+
+  var expanded = state.expanded;
+  actions.addEventListener('click', function (e) {
+    var a = e.target.getAttribute && e.target.getAttribute('data-a');
+    if (a === 'core') { questions.forEach(function (q) { var id = q.getAttribute('data-id'); if (!q.classList.contains('iftime') && state.order.indexOf(id) < 0) state.order.push(id); }); commit(); }
+    if (a === 'expand') { var all = state.order.every(function (id) { return expanded[id] !== false; }); state.order.forEach(function (id) { expanded[id] = !all; }); commit(); }
+    if (a === 'clear') { if (state.order.length) { state.order = []; commit(); } }
+    if (a === 'close') document.documentElement.classList.remove('drawer-open');
+    if (a === 'copy') copyNotes(e.target);
+  });
+
+  function toggle(id) {
+    var i = state.order.indexOf(id);
+    if (i < 0) state.order.push(id); else state.order.splice(i, 1);
+    commit();
+  }
+  function move(id, d) {
+    var i = state.order.indexOf(id), j = i + d;
+    if (j < 0 || j >= state.order.length) return;
+    state.order.splice(i, 1); state.order.splice(j, 0, id); commit();
+  }
+  function jump(id) {
+    var q = byId[id]; if (!q) return;
+    if (window.innerWidth < 1240) document.documentElement.classList.remove('drawer-open');
+    q.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    q.classList.remove('flash'); void q.offsetWidth; q.classList.add('flash');
+  }
+  function copyNotes(btn) {
+    var lines = state.order.map(function (id) {
+      var ask = byId[id].querySelector('.ask').textContent.replace(/^\s*(Core|If time)\s*/i, '').trim();
+      return ask + '\nAsked: ' + (state.asked[id] ? 'yes' : 'no') + '\nNotes: ' + (state.notes[id] || '').trim() + '\n';
+    });
+    var text = document.title + '\n\n' + lines.join('\n');
+    function done() { var o = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = o; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+    function fallback() { var ta = el('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} ta.remove(); }
+  }
+
+  // Drag and drop reordering (drag a card by its grip)
+  var dragId = null;
+  function clearDrop() { [].forEach.call(list.querySelectorAll('.drop-before, .drop-after'), function (n) { n.classList.remove('drop-before', 'drop-after'); }); }
+  function dropTarget(y) {
+    var cards = [].slice.call(list.querySelectorAll('.card:not(.dragging)'));
+    for (var i = 0; i < cards.length; i++) { var r = cards[i].getBoundingClientRect(); if (y < r.top + r.height / 2) return { el: cards[i], before: true }; }
+    return cards.length ? { el: cards[cards.length - 1], before: false } : null;
+  }
+  list.addEventListener('dragover', function (e) {
+    if (!dragId) return;
+    e.preventDefault(); try { e.dataTransfer.dropEffect = 'move'; } catch (x) {}
+    clearDrop(); var t = dropTarget(e.clientY); if (t) t.el.classList.add(t.before ? 'drop-before' : 'drop-after');
+  });
+  list.addEventListener('dragleave', function (e) { if (!list.contains(e.relatedTarget)) clearDrop(); });
+  list.addEventListener('drop', function (e) {
+    if (!dragId) return;
+    e.preventDefault();
+    var t = dropTarget(e.clientY); clearDrop();
+    var moving = dragId, order = state.order.filter(function (x) { return x !== moving; });
+    var idx = t ? order.indexOf(t.el.getAttribute('data-id')) + (t.before ? 0 : 1) : order.length;
+    order.splice(idx, 0, moving); state.order = order; dragId = null; commit();
+  });
+
+  function card(id) {
+    var q = byId[id];
+    var c = el('div', 'card' + (q.classList.contains('iftime') ? ' iftime' : '') + (state.asked[id] ? ' asked' : ''));
+    var isOpen = expanded[id] != null ? expanded[id] : !state.asked[id];
+    if (!isOpen) c.classList.add('collapsed');
+    c.setAttribute('data-id', id);
+    c.addEventListener('dragstart', function (e) { dragId = id; c.classList.add('dragging'); try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); } catch (x) {} });
+    c.addEventListener('dragend', function () { c.draggable = false; c.classList.remove('dragging'); dragId = null; clearDrop(); });
+
+    var bar = el('div', 'card-bar');
+    var idBtn = el('button', 'id', id); idBtn.type = 'button'; idBtn.title = 'Show in the report';
+    idBtn.addEventListener('click', function () { jump(id); });
+    var lab = el('label'); var cb = el('input'); cb.type = 'checkbox'; cb.checked = !!state.asked[id];
+    cb.addEventListener('change', function () { state.asked[id] = cb.checked; if (cb.checked) expanded[id] = false; commit(); });
+    lab.appendChild(cb); lab.appendChild(document.createTextNode('Asked'));
+    var topic = q.closest('.topic'), h = topic && topic.querySelector('h3');
+    var full = h ? h.textContent.replace(/^\s*\d+\.\s*/, '').trim() : '';
+    var short = (topic && topic.getAttribute('data-short')) || full;
+    var grip = el('span', 'grip', '⠿'); grip.title = 'Drag to reorder';
+    grip.addEventListener('mousedown', function () { c.draggable = true; });
+    grip.addEventListener('mouseup', function () { c.draggable = false; });
+    bar.appendChild(grip);
+    bar.appendChild(idBtn);
+    if (short) { var cat = el('span', 'cat', short); cat.title = full; bar.appendChild(cat); }
+    bar.appendChild(lab); bar.appendChild(el('span', 'spacer'));
+    [['▾', 'Show/hide details', function () { expanded[id] = c.classList.contains('collapsed'); commit(); }],
+     ['↑', 'Move up', function () { move(id, -1); }],
+     ['↓', 'Move down', function () { move(id, 1); }],
+     ['✕', 'Remove', function () { toggle(id); }]].forEach(function (b) {
+      var x = el('button', 'icon', b[0]); x.type = 'button'; x.title = b[1]; x.addEventListener('click', b[2]); bar.appendChild(x);
+    });
+    c.appendChild(bar);
+
+    var ask = q.querySelector('.ask').cloneNode(true);
+    c.appendChild(ask);
+    var detail = el('div', 'detail');
+    ['.follow', '.listen', '.flag', '.more'].forEach(function (sel) {
+      var n = q.querySelector(sel); if (n) { var cl = n.cloneNode(true); cl.classList.remove('collapsed'); detail.appendChild(cl); }
+    });
+    c.appendChild(detail);
+    var more = detail.querySelector('.more');
+    if (more) makeToggle(more, !!state.moreOpen[id], function (open) { state.moreOpen[id] = open; save(); });
+
+    var ta = el('textarea'); ta.placeholder = 'Notes on their answer…'; ta.value = state.notes[id] || '';
+    ta.addEventListener('input', function () { state.notes[id] = ta.value; save(); });
+    c.appendChild(ta);
+    return c;
+  }
+
+  function render() {
+    questions.forEach(function (q) {
+      var on = state.order.indexOf(q.getAttribute('data-id')) >= 0;
+      q.classList.toggle('is-picked', on);
+      q.querySelector('.pick').textContent = on ? '✓ Selected' : '+ Ask this';
+    });
+    list.innerHTML = '';
+    state.order.forEach(function (id) { list.appendChild(card(id)); });
+    var n = state.order.length;
+    var askedN = state.order.filter(function (id) { return state.asked[id]; }).length;
+    empty.style.display = n ? 'none' : '';
+    meta.textContent = n ? n + ' selected · about ' + n * MIN_PER_Q + ' min · ' + askedN + ' asked' : 'None selected yet';
+    fab.textContent = 'My questions (' + n + ')';
+  }
+  function commit() { save(); render(); }
+  render();
+})();
+</script>
+</body>
+</html>
