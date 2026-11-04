@@ -22,6 +22,7 @@
   li { margin-bottom: 3pt; }
   .meta { color: var(--muted); margin-bottom: 14pt; }
   .meta a { color: var(--accent); text-decoration: none; }
+  .links a { color: var(--accent); word-break: break-all; }
 
   /* Score summary box */
   .verdict { display: flex; gap: 14pt; align-items: stretch; border: 1px solid var(--line); border-radius: 6pt; padding: 12pt; background: var(--soft); break-inside: avoid; }
@@ -182,9 +183,14 @@
   </div>
 </div>
 
-<!-- Claims checked against the candidate's own links: what was verified, what didn't hold up, what wasn't checked. Omit if no links. -->
+<!-- Claims checked against the candidate's own links: what was verified, what didn't hold up, what wasn't checked. Omit if no links.
+     Every item ends with the link itself so the reader can open it: the full URL as href, and the URL without "https://" as the visible text (so it still reads on paper). -->
 <h3>Links checked</h3>
-<ul><li><b>Verified:</b> ... </li><li><b>Not supported:</b> ...</li><li><b>Not checked:</b> ...</li></ul>
+<ul class="links">
+  <li><b>Verified:</b> ... (<a href="URL">URL_WITHOUT_SCHEME</a>)</li>
+  <li><b>Not supported:</b> ... (<a href="URL">URL_WITHOUT_SCHEME</a>)</li>
+  <li><b>Not checked:</b> ... (<a href="URL">URL_WITHOUT_SCHEME</a>)</li>
+</ul>
 
 <!-- One-paragraph candidate snapshot: current role, years of experience, career arc, what they're known for. -->
 <h3>Candidate snapshot</h3>

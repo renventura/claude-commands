@@ -21,6 +21,7 @@
   li { margin-bottom: 3pt; }
   .meta { color: var(--muted); margin-bottom: 14pt; }
   .meta a { color: var(--accent); text-decoration: none; }
+  .links a { color: var(--accent); word-break: break-all; }
 
   /* Score summary box */
   .verdict { display: flex; gap: 14pt; align-items: stretch; border: 1px solid var(--line); border-radius: 6pt; padding: 12pt; background: var(--soft); break-inside: avoid; }
@@ -180,10 +181,10 @@
 </div>
 
 <h3>Links checked</h3>
-<ul>
-  <li><b>Verified:</b> the open-source caching plugin they maintain exists, has 40+ releases and a CI workflow.</li>
-  <li><b>Not supported:</b> "led a team of five" — the linked repo has one contributor.</li>
-  <li><b>Not checked:</b> personal blog.</li>
+<ul class="links">
+  <li><b>Verified:</b> the open-source caching plugin they maintain exists, has 40+ releases and a CI workflow (<a href="https://github.com/example-dev/wc-fast-cache">github.com/example-dev/wc-fast-cache</a>).</li>
+  <li><b>Not supported:</b> "led a team of five" — the linked repo has one contributor (<a href="https://github.com/example-dev/storefront-api">github.com/example-dev/storefront-api</a>).</li>
+  <li><b>Not checked:</b> personal blog (<a href="https://example-dev.blog">example-dev.blog</a>).</li>
 </ul>
 
 <h2>Fit against the role</h2>
