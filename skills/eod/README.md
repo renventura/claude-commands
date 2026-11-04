@@ -19,6 +19,7 @@ Paths are relative to this folder (`skills/eod/`).
 |---|---|---|
 | `SKILL.md` | `~/.claude/skills/eod` (the folder is linked) | The `/eod` skill itself |
 | `scripts/log-issue.sh` | `~/.claude/eod/log-issue.sh` | Appends a Linear issue to the running log |
+| `scripts/record-run.sh` | `~/.claude/eod/record-run.sh` | Records a successful run and clears the log up to it |
 | `claude-md-rule.md` | appended to `~/.claude/CLAUDE.md` | The rule telling Claude to log Linear work as it happens |
 | `settings.sample.json` | merge into `~/.claude/settings.json` | Permissions the skill uses, so it runs without prompts |
 | `setup.sh` | | Extra setup, run by the repo's `install.sh` (see below) |
@@ -33,7 +34,7 @@ From the repo root:
 
 This links `~/.claude/skills/eod` to this folder, then runs `setup.sh`, which:
 
-- links `~/.claude/eod/log-issue.sh` to `scripts/log-issue.sh`
+- links `~/.claude/eod/log-issue.sh` and `~/.claude/eod/record-run.sh` to the matching files in `scripts/`
 - removes an old `~/.claude/commands/eod.md` slash command, which would clash with the skill. A symlink is deleted; a real file is moved to `eod.md.bak`.
 - appends the logging rule to `~/.claude/CLAUDE.md`, only if it isn't there yet
 
@@ -56,7 +57,7 @@ The installer doesn't touch `settings.json`. Merge the `permissions.allow` entri
 - `linear-log.tsv`: tab-separated `<UTC timestamp>\t<ISSUE-KEY>\t<summary>` lines, appended by `log-issue.sh`.
 - `last-run`: the UTC timestamp of the last successful run. The file's mtime is also used as the transcript cutoff.
 
-After a draft is created, `/eod` writes a new `last-run` and drops log entries older than it. If the draft can't be created, nothing is cleared, so the next run covers the same window.
+After a draft is created, `/eod` runs `record-run.sh`, which writes a new `last-run` and drops log entries older than it. It's a script (allowlisted in `settings.sample.json`) because `~/.claude` is a protected path: inline shell writes or the Write tool there trigger a permission prompt, which silently stalled this step before. If the draft can't be created, nothing is cleared, so the next run covers the same window.
 
 To set the window start by hand, e.g. to 4:20pm local today:
 
