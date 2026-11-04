@@ -18,7 +18,7 @@ candidate in it is fictional.*
 - **Fit against the role:** every must-have and nice-to-have from the posting, rated
   Strong / Partial / Not evident, with the evidence.
 - **Links checked:** claims verified against links the candidate shared (GitHub PRs,
-  repos, portfolio).
+  repos, portfolio), each with the link itself so you can open it and review it.
 - **Strengths and concerns to probe.**
 - **Interview plan:** a time plan for the interview and what to cut first if you run long.
 - **Topics and questions:** 6-9 topics with questions based on the candidate's
