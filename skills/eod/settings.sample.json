@@ -5,6 +5,7 @@
       "Bash(date:*)",
       "Bash(find:*)",
       "Bash(~/.claude/eod/log-issue.sh:*)",
+      "Bash(~/.claude/eod/record-run.sh:*)",
       "Read",
       "mcp__claude_ai_Google_Calendar__list_events",
       "mcp__claude_ai_Linear",

@@ -182,13 +182,12 @@ This DM is a notification only — never put ticket details, summaries, or repor
 
 Only do this if Step 5 created the draft. If Step 5 hit `draft_already_exists` or failed in any other way, skip this step entirely, so the next run still covers the same window and the same log entries.
 
-Write `RUN_START` (from Step 1) as the new `last-run`, then drop every log entry before it. Entries logged after `RUN_START`, while this run was going, are kept for the next report:
+Run the record script with the literal `RUN_START` value from Step 1, as a single command on its own (don't chain anything before or after it, so it matches the permission allowlist and runs without a prompt):
 
 ```
-mkdir -p ~/.claude/eod
-printf '%s\n' "$RUN_START" > ~/.claude/eod/last-run
-LOG=~/.claude/eod/linear-log.tsv
-if [ -f "$LOG" ]; then
-  awk -F'\t' -v s="$RUN_START" '$1 >= s' "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
-fi
+~/.claude/eod/record-run.sh <RUN_START>
 ```
+
+It writes `RUN_START` as the new `last-run` and drops every log entry before it. Entries logged after `RUN_START`, while this run was going, are kept for the next report. Don't write these files any other way (Write tool, inline `printf`/`awk`/`mv`): `~/.claude` is a protected path, so those get blocked.
+
+If the script fails or is denied, tell the user plainly that the run wasn't recorded and the log wasn't cleared, and give them the exact command to run: `! ~/.claude/eod/record-run.sh <RUN_START>`.
