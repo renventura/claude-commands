@@ -8,7 +8,7 @@ Generate an end-of-day report covering everything since the previous successful 
 
 State lives in `~/.claude/eod/`:
 - `last-run`: one line, the UTC ISO timestamp (e.g. `2026-11-02T22:10:00Z`) of the start of the last successful run. It may not exist yet.
-- `linear-log.tsv`: tab-separated lines `<UTC ISO timestamp>\t<ISSUE-KEY>\t<brief summary>`, appended during normal work by `~/.claude/eod/log-issue.sh`. It may not exist or may be empty.
+- `linear-log.tsv`: tab-separated lines `<UTC ISO timestamp>\t<ISSUE-KEY>\t<brief summary>`, appended during normal work by `~/.claude/eod/log-issue.sh`. Work with no Linear issue is logged with the key `-` and a fourth column, its project: `<UTC ISO timestamp>\t-\t<brief summary>\t<project>`. It may not exist or may be empty.
 
 ## Step 0 — Verify required connections
 
@@ -44,7 +44,7 @@ find ~/.claude/projects -name "*.jsonl" $AGE -not -path "*/subagents/*" -not -pa
 
 Group candidate files by project directory.
 
-Also read the Linear issue log now: keep only lines of `~/.claude/eod/linear-log.tsv` whose timestamp is at or after `WINDOW_START` and before `RUN_START`, then group them by issue key. Each key's entries are direct evidence that the ticket was actively worked in the window. Use them in Step 4.
+Also read the Linear issue log now: keep only lines of `~/.claude/eod/linear-log.tsv` whose timestamp is at or after `WINDOW_START` and before `RUN_START`, then group them by issue key. Each key's entries are direct evidence that the ticket was actively worked in the window. Entries with the key `-` are no-issue work: never group them by key or look them up in Linear; each is its own item, with its project in the fourth column. Use them all in Step 4.
 
 If, after the per-message timestamp check in Step 2, zero transcript lines fall in the window, the log has no entries in the window, **and** Step 2b found no qualifying Slack conversations, create the Slack draft with a single line: `No sessions logged since the last report.`, then continue to Steps 6 and 7.
 
@@ -123,6 +123,7 @@ Merge the Step 2 and Step 2b summaries with the in-window Linear log entries fro
 - A log key with no matching Step 2 summary still gets a bullet, written from its log summaries. This covers work in projects whose transcripts weren't scanned.
 - A Slack conversation (Step 2b) with no ticket is its own bullet. If it's plainly about the same work as another item, fold it into that item's bullet instead.
 - Log entries count as "actively worked" evidence, so their keys pass the ticket-key rule below.
+- A no-issue log entry (key `-`) is a TODAY item with no ticket key, under the project in its fourth column. The key `-` is never a ticket: don't print it or look it up. The same work often shows up as a no-ticket item from Step 2 too; when it's plainly the same task, write one bullet, not two.
 - Group every TODAY item under its project. For an item with a ticket key, the project is the Linear issue's project name: look it up with `mcp__claude_ai_Linear__get_issue` (read-only), and fall back to its team name if it has no project. For items without a ticket, use the project label from Step 2 or 2b, reusing the name of a project already in the report when the work plainly belongs to it. Items that fit nowhere go under "Other", and meetings go under "Meetings". If the Linear lookup fails, use the agents' project labels instead.
 - Weed out housekeeping. Summaries describe substance: what was built, fixed, decided, investigated or found. Leave out actions like closing an issue, moving its status, opening or merging a PR, or counts of PRs. If an issue has nothing but housekeeping in the window (e.g. only closed, only moved to Done, only shipped with no other work), skip it entirely. Don't give it a bullet.
 

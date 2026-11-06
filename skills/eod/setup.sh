@@ -3,7 +3,7 @@
 # the skill into ~/.claude/skills/eod:
 #   - links the scripts to ~/.claude/eod/ (log-issue.sh, record-run.sh)
 #   - moves aside an old /eod slash command, which would clash with the skill
-#   - adds the EOD issue log rule to ~/.claude/CLAUDE.md if it isn't there yet
+#   - adds the EOD issue log rule to ~/.claude/CLAUDE.md, or updates an older copy
 # Safe to re-run.
 set -e
 
@@ -35,10 +35,25 @@ elif [ -e "$old" ]; then
   echo "backup  $old.bak (old slash command; /eod is now a skill)"
 fi
 
-if grep -q '^## EOD issue log' "$claude/CLAUDE.md" 2>/dev/null; then
-  echo "ok      $claude/CLAUDE.md already has the EOD issue log rule"
+# The rule is the "## EOD issue log" section, up to the next "## " heading.
+# An older copy is replaced in place, so re-running setup updates it.
+rule="$here/claude-md-rule.md"
+md="$claude/CLAUDE.md"
+if ! grep -q '^## EOD issue log' "$md" 2>/dev/null; then
+  printf '\n' >> "$md"
+  cat "$rule" >> "$md"
+  echo "added   EOD issue log rule to $md"
 else
-  printf '\n' >> "$claude/CLAUDE.md"
-  cat "$here/claude-md-rule.md" >> "$claude/CLAUDE.md"
-  echo "added   EOD issue log rule to $claude/CLAUDE.md"
+  awk -v rule="$rule" '
+    /^## EOD issue log/ { while ((getline line < rule) > 0) print line; skip = 1; next }
+    skip && /^## / { skip = 0; print "" }
+    !skip { print }
+  ' "$md" > "$md.tmp"
+  if cmp -s "$md" "$md.tmp"; then
+    rm "$md.tmp"
+    echo "ok      $md already has the current EOD issue log rule"
+  else
+    mv "$md.tmp" "$md"
+    echo "updated EOD issue log rule in $md"
+  fi
 fi
