@@ -1,9 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Agent",
       "Bash(date:*)",
-      "Bash(find:*)",
+      "Bash(python3 -I ~/.claude/eod/extract-window.py:*)",
       "Bash(~/.claude/eod/log-issue.sh:*)",
       "Bash(~/.claude/eod/record-run.sh:*)",
       "Read",
