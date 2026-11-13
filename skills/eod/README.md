@@ -5,7 +5,7 @@ The `/eod` Claude Code skill: builds an end-of-day report covering everything si
 The report pulls from four sources:
 
 - **Linear issue log:** issues Claude logs as it works on them during the day, in any project.
-- **Claude Code session transcripts:** every project on the machine except the home-directory project.
+- **Claude Code session transcripts:** every project on the machine except the home-directory project, read as a trimmed digest from `extract-window.py` rather than full transcripts.
 - **Slack:** substantial conversations the user took part in (debugging, support, decisions), DMs included.
 - **Google Calendar:** meetings held during the report window.
 
@@ -19,6 +19,7 @@ Paths are relative to this folder (`skills/eod/`).
 |---|---|---|
 | `SKILL.md` | `~/.claude/skills/eod` (the folder is linked) | The `/eod` skill itself |
 | `scripts/log-issue.sh` | `~/.claude/eod/log-issue.sh` | Appends a Linear issue, or work with no issue (`--no-issue`), to the running log |
+| `scripts/extract-window.py` | `~/.claude/eod/extract-window.py` | Prints a compact per-project digest of session activity in the report window (human prompts and assistant replies only), so `/eod` never reads raw transcripts |
 | `scripts/record-run.sh` | `~/.claude/eod/record-run.sh` | Records a successful run and clears the log up to it |
 | `claude-md-rule.md` | added to `~/.claude/CLAUDE.md` | The rule telling Claude to log Linear work as it happens, and to ask what to do about work with no issue |
 | `settings.sample.json` | merge into `~/.claude/settings.json` | Permissions the skill uses, so it runs without prompts |
@@ -34,7 +35,7 @@ From the repo root:
 
 This links `~/.claude/skills/eod` to this folder, then runs `setup.sh`, which:
 
-- links `~/.claude/eod/log-issue.sh` and `~/.claude/eod/record-run.sh` to the matching files in `scripts/`
+- links `~/.claude/eod/log-issue.sh`, `record-run.sh` and `extract-window.py` to the matching files in `scripts/`
 - removes an old `~/.claude/commands/eod.md` slash command, which would clash with the skill. A symlink is deleted; a real file is moved to `eod.md.bak`.
 - adds the logging rule to `~/.claude/CLAUDE.md`, or replaces it with the current version if an older one is there
 

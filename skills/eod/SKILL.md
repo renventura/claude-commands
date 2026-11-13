@@ -1,10 +1,11 @@
 ---
 name: eod
 disable-model-invocation: true
+model: sonnet
 description: Build the EOD report (everything since the last /eod run) from the Linear issue log and local Claude Code sessions and create a Slack draft in #software-eod
 ---
 
-Generate an end-of-day report covering everything since the previous successful `/eod` run (so work done the night before, after the last report, is picked up). It uses two sources: the local Linear issue log, and the Claude Code session transcripts across every project on this machine. Then create a Slack **draft** (never send) in the #software-eod channel.
+Generate an end-of-day report covering everything since the previous successful `/eod` run (so work done the night before, after the last report, is picked up). It uses the local Linear issue log, a compact digest of the Claude Code session transcripts across every project on this machine, and Slack and Calendar activity. Then create a Slack **draft** (never send) in the #software-eod channel.
 
 State lives in `~/.claude/eod/`:
 - `last-run`: one line, the UTC ISO timestamp (e.g. `2026-11-02T22:10:00Z`) of the start of the last successful run. It may not exist yet.
@@ -32,67 +33,53 @@ WINDOW_START=$(cat ~/.claude/eod/last-run 2>/dev/null || echo "$LOCAL_MIDNIGHT")
 
 Keep `RUN_START` for Step 7. The report window is `WINDOW_START` to `RUN_START`. If there's no `last-run` file yet (first run), the window falls back to local midnight today, expressed in UTC. Never use the UTC date for "today": after 7–8pm Eastern it's already tomorrow in UTC.
 
-Then find *candidate* transcripts, excluding subagent transcripts and the project corresponding to the user's own home directory (that's where this EOD tooling itself lives, not client/work content — derive it from `$HOME` rather than hardcoding a username, since this command runs under different accounts). Use the `last-run` file's own mtime as the candidate cutoff when it exists, since a transcript can't contain new lines without being modified after it:
+Then build the transcript digest with one script call (run it on its own, not chained, so it matches the permission allowlist). It finds candidate transcripts across every project on this machine (skipping subagent transcripts and the user's own home-directory project, where this EOD tooling lives), keeps only lines whose own `timestamp` is at or after `WINDOW_START` and before `RUN_START`, and drops tool calls, tool results and system noise, leaving a short per-project digest of human prompts and assistant replies:
 
 ```
-HOME_PROJECT=$(echo "$HOME" | sed 's/\//-/g')
-if [ -f ~/.claude/eod/last-run ]; then AGE="-newer $HOME/.claude/eod/last-run"; else AGE="-mtime -2"; fi
-find ~/.claude/projects -name "*.jsonl" $AGE -not -path "*/subagents/*" -not -path "*${HOME_PROJECT}*"
+python3 -I ~/.claude/eod/extract-window.py "$WINDOW_START" "$RUN_START"
 ```
 
-**File mtime is only a candidate filter, never proof of work in the window — treat it as unreliable.** A session file can be touched (resume, indexing, compaction) without any new conversation happening, so its mtime can read as recent while its actual content is days old, or a single file can mix old and new content together. The ONLY source of truth for "did this happen in the window" is each JSON line's own `timestamp` field (e.g. `"timestamp":"2026-07-29T20:15:00.000Z"`) — a line only counts if that timestamp is at or after `WINDOW_START` and before `RUN_START`.
-
-Group candidate files by project directory.
+File mtime is only a candidate filter, never proof of work in the window; the script already applies the per-line timestamp check, so don't re-read raw transcripts. It prints `NO_ACTIVITY` when nothing qualifies. Don't read `~/.claude/projects` files directly and don't launch subagents to do it: the digest is small enough to read in this conversation.
 
 Also read the Linear issue log now: keep only lines of `~/.claude/eod/linear-log.tsv` whose timestamp is at or after `WINDOW_START` and before `RUN_START`, then group them by issue key. Each key's entries are direct evidence that the ticket was actively worked in the window. Entries with the key `-` are no-issue work: never group them by key or look them up in Linear; each is its own item, with its project in the fourth column. Use them all in Step 4.
 
-If, after the per-message timestamp check in Step 2, zero transcript lines fall in the window, the log has no entries in the window, **and** Step 2b found no qualifying Slack conversations, create the Slack draft with a single line: `No sessions logged since the last report.`, then continue to Steps 6 and 7.
+If the digest says `NO_ACTIVITY`, the log has no entries in the window, **and** Step 2b found no qualifying Slack conversations, create the Slack draft with a single line: `No sessions logged since the last report.`, then continue to Steps 6 and 7.
 
-## Step 2 — Summarize each project in parallel
+## Step 2 — Summarize each project from the digest
 
-For each project directory with one or more candidate transcripts, launch a background `Agent` (subagent_type: general-purpose) with the resolved `WINDOW_START` and `RUN_START` strings, instructed to:
+Read the digest from Step 1 yourself (no subagents) and write, per project, only:
 
-- Read the full transcript(s) for that project (include any `subagents/*.jsonl` files nested under a session if they add necessary context).
-- **Filter to only JSON lines whose `timestamp` is at or after `WINDOW_START` and before `RUN_START`.** Ignore every other line in the file, even if it's most of the file — a file being a "candidate" does not mean its content is in the window.
-- If a transcript has zero lines in the window, report nothing for that file/project.
-- Base the summary below only on the in-window lines.
-
-Return **only**:
-
-- A one-line (<15 words) plain-language summary per distinct task/issue *actually worked on* in the window, written for someone skimming a status channel — not an implementation writeup. Describe the substance of the work (what was built, fixed, decided or found), not housekeeping actions like opening/merging a PR, closing an issue or changing its status. Never mention repo names, counts of repos or counts of PRs. If the only thing done for a task in the window was housekeeping, report nothing for it.
-- The associated Linear ticket key, but **only if the user actively worked that ticket in this session** (wrote/reviewed code, investigated, commented, posted findings) — not a ticket that was merely mentioned, searched, cross-referenced, or came up as related/prior context while working on something else. If no ticket was actively worked, or you're not certain, say "no ticket" rather than guessing.
+- A one-line (<15 words) plain-language summary per distinct task/issue *actually worked on* in the window, written for someone skimming a status channel, not an implementation writeup. Describe the substance of the work (what was built, fixed, decided or found), not housekeeping actions like opening/merging a PR, closing an issue or changing its status. Never mention repo names, counts of repos or counts of PRs. If the only thing done for a task in the window was housekeeping, report nothing for it.
+- The associated Linear ticket key, but **only if the user actively worked that ticket in the session** (wrote/reviewed code, investigated, commented, posted findings), not a ticket that was merely mentioned, searched, cross-referenced, or came up as related/prior context. If no ticket was actively worked, or you're not certain, say "no ticket" rather than guessing. A ticket key is a claim of fact: if it can't be pointed to in the digest as something worked on in the window, leave it out rather than infer it.
 - A project label for each item: a short, plain name for the product or initiative the work belongs to (e.g. "Telemetry"), never a repo slug or directory name. This is only a fallback; Step 4 prefers the Linear project name when the item has a ticket.
 - If the session surfaced a blocker, open question, or something explicitly waiting on someone else, one line describing it plus the ticket key (same actively-worked rule applies).
 
-Explicitly tell each agent: no file names, no code details, no step-by-step of what was tried, no repo names or counts — just the outcome and the ticket key. A ticket key is a claim of fact; if it can't be directly pointed to in the transcript as something worked on today, leave it out rather than infer it. Launch the Step 2b agent at the same time as these. Wait for all agents to finish before continuing.
+No file names, no code details, no step-by-step of what was tried, no repo names or counts: just the outcome and the ticket key. Only if a project's digest is too thin to tell what was worked on, read that session's raw transcript for the window as a fallback.
 
 ## Step 2b — Review Slack activity
 
-Work done in Slack counts too, like helping debug or troubleshoot something that isn't the user's own Linear issue. Launch one more background `Agent` (subagent_type: general-purpose) alongside the Step 2 agents, passing it the user ID from Step 0 and the window as Unix timestamps:
+Work done in Slack counts too, like helping debug or troubleshoot something that isn't the user's own Linear issue. Do this yourself, in this conversation (no subagent), using the user ID from Step 0 and the window as Unix timestamps:
 
 ```
 SLACK_AFTER=$(date -j -u -f '%Y-%m-%dT%H:%M:%SZ' "$WINDOW_START" +%s)
 SLACK_BEFORE=$(date -j -u -f '%Y-%m-%dT%H:%M:%SZ' "$RUN_START" +%s)
 ```
 
-Instruct it to:
-
 - Find every message the user sent in the window with `mcp__claude_ai_Slack__slack_search_public_and_private`: `filters: "from:<@USER_ID>"`, `after: SLACK_AFTER`, `before: SLACK_BEFORE`, `channel_types: "public_channel,private_channel,mpim,im"` (DMs and group DMs included), `sort: "timestamp"`, `sort_dir: "asc"`, `limit: 20`, `natural_language_query: ""`. Results come 20 at a time; keep passing the returned `cursor` until there are no more pages.
 - Skip messages in #software-eod (`C0A9YSM1599`) and in the user's DM with themselves, so the report never counts itself or its notifications.
-- Group the messages into conversations: one per thread, and for un-threaded channel or DM messages, one per run of back-and-forth on the same topic. Read the full thread with `mcp__claude_ai_Slack__slack_read_thread` whenever the user's messages alone don't make clear what was being solved.
+- Group the messages into conversations: one per thread, and for un-threaded channel or DM messages, one per run of back-and-forth on the same topic. Read a full thread with `mcp__claude_ai_Slack__slack_read_thread` only when the user's messages alone don't make clear what was being solved and the conversation could otherwise qualify; read at most 5 threads.
 - A conversation counts only if both of these hold:
   - **Enough involvement:** the user wrote 5 or more messages in it, **or** wrote at least one long, detailed answer (a real explanation, diagnosis, or walkthrough, not a one-liner).
   - **Substance:** it's about technical work, support or troubleshooting, a decision, or another topic of real substance. Judge by content, not channel name. Skip anything social or casual (greetings, jokes, lunch, weekend plans, kudos), plus scheduling, quick acknowledgements and status pings.
 
-Return **only**, per qualifying conversation:
+Keep, per qualifying conversation:
 
 - A one-line (<15 words) summary of the substance, e.g. "Helped debug intermittent checkout timeouts for Support." No quotes, no customer names or account details, no names of people from DMs, no channel names, and no private details. Assume this text will be posted to a shared channel.
 - A Linear ticket key only if the conversation names one **and** the user actively worked that issue in it (e.g. diagnosed it, proposed or confirmed a fix). A key that was only mentioned in passing doesn't count. Otherwise "no ticket". Never guess one.
 - A project label: the plain name of the product or initiative it relates to, or "Other" if unclear.
 - Any blocker or open question the user is waiting on, as one line (same ticket-key rule).
 
-If nothing qualifies, return nothing. If the search tool errors, retry once, then return nothing rather than blocking the report.
-
+If nothing qualifies, keep nothing. If the search tool errors, retry once, then skip Slack rather than blocking the report.
 
 ## Step 3 — Pull meetings in the window
 
@@ -118,13 +105,13 @@ CAL_END=$(to_local "$RUN_START")
 
 ## Step 4 — Compile into TODAY / FLAGS / NEXT
 
-Merge the Step 2 and Step 2b summaries with the in-window Linear log entries from Step 1:
+Merge the Step 2 and Step 2b results with the in-window Linear log entries from Step 1:
 - One bullet per Linear issue key, across every source: the log, all Step 2 summaries from every project and session, and the Step 2b Slack conversations. If several items share the same key, merge them into a single bullet with one slightly longer summary (still one line, roughly 25 words max) covering all of that issue's work, instead of listing the issue more than once. Items with no ticket are not merged by key; keep them as separate bullets unless they're plainly the same task.
 - A log key with no matching Step 2 summary still gets a bullet, written from its log summaries. This covers work in projects whose transcripts weren't scanned.
 - A Slack conversation (Step 2b) with no ticket is its own bullet. If it's plainly about the same work as another item, fold it into that item's bullet instead.
 - Log entries count as "actively worked" evidence, so their keys pass the ticket-key rule below.
 - A no-issue log entry (key `-`) is a TODAY item with no ticket key, under the project in its fourth column. The key `-` is never a ticket: don't print it or look it up. The same work often shows up as a no-ticket item from Step 2 too; when it's plainly the same task, write one bullet, not two.
-- Group every TODAY item under its project. For an item with a ticket key, the project is the Linear issue's project name: look it up with `mcp__claude_ai_Linear__get_issue` (read-only), and fall back to its team name if it has no project. For items without a ticket, use the project label from Step 2 or 2b, reusing the name of a project already in the report when the work plainly belongs to it. Items that fit nowhere go under "Other", and meetings go under "Meetings". If the Linear lookup fails, use the agents' project labels instead.
+- Group every TODAY item under its project. For an item with a ticket key, the project is the Linear issue's project name: look it up with `mcp__claude_ai_Linear__get_issue` (read-only; request every distinct key in one message as parallel calls, once per key, not one at a time), and fall back to its team name if it has no project. For items without a ticket, use the project label from Step 2 or 2b, reusing the name of a project already in the report when the work plainly belongs to it. Items that fit nowhere go under "Other", and meetings go under "Meetings". If the Linear lookup fails, use the agents' project labels instead.
 - Weed out housekeeping. Summaries describe substance: what was built, fixed, decided, investigated or found. Leave out actions like closing an issue, moving its status, opening or merging a PR, or counts of PRs. If an issue has nothing but housekeeping in the window (e.g. only closed, only moved to Done, only shipped with no other work), skip it entirely. Don't give it a bullet.
 
 Write plain Slack mrkdwn. No title, no date heading, no mention that this is automated or written by an assistant — just the three sections. This Slack tool renders standard markdown, so bold is **double** asterisks (`**TODAY**`), not Slack's native single-asterisk bold — using single asterisks here renders as italics, which is wrong. Lists are real markdown lists (`- item`), not a literal bullet character — a `•` glued onto the line is plain text, not a rendered list item:

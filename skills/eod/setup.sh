@@ -1,7 +1,7 @@
 #!/bin/sh
 # Extra setup for the eod skill, run by the repo's install.sh after it links
 # the skill into ~/.claude/skills/eod:
-#   - links the scripts to ~/.claude/eod/ (log-issue.sh, record-run.sh)
+#   - links the scripts to ~/.claude/eod/ (log-issue.sh, record-run.sh, extract-window.py)
 #   - moves aside an old /eod slash command, which would clash with the skill
 #   - adds the EOD issue log rule to ~/.claude/CLAUDE.md, or updates an older copy
 # Safe to re-run.
@@ -11,7 +11,7 @@ here=$(cd "$(dirname "$0")" && pwd)
 claude="$HOME/.claude"
 
 mkdir -p "$claude/eod"
-for name in log-issue.sh record-run.sh; do
+for name in log-issue.sh record-run.sh extract-window.py; do
   src="$here/scripts/$name"
   dest="$claude/eod/$name"
   if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
