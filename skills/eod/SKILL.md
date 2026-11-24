@@ -2,10 +2,10 @@
 name: eod
 disable-model-invocation: true
 model: sonnet
-description: Build the EOD report (everything since the last /eod run) from the Linear issue log and local Claude Code sessions and create a Slack draft in #software-eod
+description: Build the EOD report (everything since the last /eod run) from the Linear issue log and local Claude Code sessions and save it as a Slack draft reply in today's EOD ping thread in #pod-commerce-solutions-internal
 ---
 
-Generate an end-of-day report covering everything since the previous successful `/eod` run (so work done the night before, after the last report, is picked up). It uses the local Linear issue log, a compact digest of the Claude Code session transcripts across every project on this machine, and Slack and Calendar activity. Then create a Slack **draft** (never send) in the #software-eod channel.
+Generate an end-of-day report covering everything since the previous successful `/eod` run (so work done the night before, after the last report, is picked up). It uses the local Linear issue log, a compact digest of the Claude Code session transcripts across every project on this machine, and Slack and Calendar activity. Then save it as a Slack **draft** (never send) replying in the thread of today's EOD ping in #pod-commerce-solutions-internal.
 
 State lives in `~/.claude/eod/`:
 - `last-run`: one line, the UTC ISO timestamp (e.g. `2026-11-02T22:10:00Z`) of the start of the last successful run. It may not exist yet.
@@ -43,7 +43,7 @@ File mtime is only a candidate filter, never proof of work in the window; the sc
 
 Also read the Linear issue log now: keep only lines of `~/.claude/eod/linear-log.tsv` whose timestamp is at or after `WINDOW_START` and before `RUN_START`, then group them by issue key. Each key's entries are direct evidence that the ticket was actively worked in the window. Entries with the key `-` are no-issue work: never group them by key or look them up in Linear; each is its own item, with its project in the fourth column. Use them all in Step 4.
 
-If the digest says `NO_ACTIVITY`, the log has no entries in the window, **and** Step 2b found no qualifying Slack conversations, create the Slack draft with a single line: `No sessions logged since the last report.`, then continue to Steps 6 and 7.
+If the digest says `NO_ACTIVITY`, the log has no entries in the window, **and** Step 2b found no qualifying Slack conversations, the report is the single line `No sessions logged since the last report.`: skip to Step 5 to draft it, then continue to Steps 6 and 7.
 
 ## Step 2 — Summarize each project from the digest
 
@@ -66,7 +66,7 @@ SLACK_BEFORE=$(date -j -u -f '%Y-%m-%dT%H:%M:%SZ' "$RUN_START" +%s)
 ```
 
 - Find every message the user sent in the window with `mcp__claude_ai_Slack__slack_search_public_and_private`: `filters: "from:<@USER_ID>"`, `after: SLACK_AFTER`, `before: SLACK_BEFORE`, `channel_types: "public_channel,private_channel,mpim,im"` (DMs and group DMs included), `sort: "timestamp"`, `sort_dir: "asc"`, `limit: 20`, `natural_language_query: ""`. Results come 20 at a time; keep passing the returned `cursor` until there are no more pages.
-- Skip messages in #software-eod (`C0A9YSM1599`) and in the user's DM with themselves, so the report never counts itself or its notifications.
+- Skip the user's replies in EOD ping threads in #pod-commerce-solutions-internal (`C0C19DQ96AE`; the parent is the Slackbot "slack-UP time" reminder described in Step 5), messages in the old #software-eod channel (`C0A9YSM1599`), and the user's DM with themselves, so the report never counts itself or its notifications.
 - Group the messages into conversations: one per thread, and for un-threaded channel or DM messages, one per run of back-and-forth on the same topic. Read a full thread with `mcp__claude_ai_Slack__slack_read_thread` only when the user's messages alone don't make clear what was being solved and the conversation could otherwise qualify; read at most 5 threads.
 - A conversation counts only if both of these hold:
   - **Enough involvement:** the user wrote 5 or more messages in it, **or** wrote at least one long, detailed answer (a real explanation, diagnosis, or walkthrough, not a one-liner).
@@ -149,11 +149,23 @@ Rules:
 - Before finalizing, drop any bullet that's only housekeeping, and check that no ticket key appears in more than one TODAY bullet. If one does, merge those bullets as described above. A key can still appear once in TODAY and once in FLAGS.
 - Meeting bullets from Step 3 never carry a ticket key — they aren't tied to session work.
 
-## Step 5 — Create the Slack draft
+## Step 5 — Create the Slack draft in today's EOD ping thread
 
-Use `mcp__claude_ai_Slack__slack_send_message_draft` with `channel_id: "C0A9YSM1599"` (#software-eod) and the compiled message as `message`.
+Each weekday around 4pm ET, Slackbot posts a reminder in #pod-commerce-solutions-internal (`C0C19DQ96AE`) that reads like `Reminder: it's @<group> slack-UP time! Share your daily EOD update here :thread:`. The report goes in as a draft reply in that thread, never as a top-level channel message.
 
-If it errors with `draft_already_exists`, do not overwrite or discard anything silently — treat this as the terminal outcome of Step 5 and skip Step 6's "ready" DM in favor of the "blocked" DM described there.
+Find today's ping. "Today" is the local date; reuse `LOCAL_MIDNIGHT` from Step 1:
+
+```
+PING_OLDEST=$(date -j -u -f '%Y-%m-%dT%H:%M:%SZ' "$LOCAL_MIDNIGHT" +%s)
+```
+
+- Call `mcp__claude_ai_Slack__slack_read_channel` with `channel_id: "C0C19DQ96AE"`, `oldest: PING_OLDEST`, `limit: 100` and `response_format: "concise"`. Keep paging with the returned `cursor` until a ping is found or there are no more pages.
+- The ping is a message from Slackbot whose text contains `slack-UP time` (case-insensitive). If more than one matches, use the newest. Keep its `ts` as `PING_TS`.
+- If no ping exists yet today (e.g. `/eod` is run before 4pm, or on a day it didn't post), don't draft anywhere else, don't fall back to an older ping and don't post a top-level message. Stop Step 5 here: tell the user, and skip to Step 6's "no ping" DM.
+
+Then use `mcp__claude_ai_Slack__slack_send_message_draft` with `channel_id: "C0C19DQ96AE"`, `thread_ts: PING_TS` and the compiled message as `message`.
+
+If it errors with `attached_draft_exists` (or `draft_already_exists`), do not overwrite or discard anything silently. Treat this as the terminal outcome of Step 5 and skip Step 6's "ready" DM in favor of the "blocked" DM described there.
 
 Never call `slack_send_message` to post the report content itself, or to any channel. The **only** permitted use of `slack_send_message` is the one-line self-DM in Step 6 below.
 
@@ -161,14 +173,15 @@ Never call `slack_send_message` to post the report content itself, or to any cha
 
 Send a Slack DM to yourself via `slack_send_message`, using the current-user ID resolved in Step 0 as `channel_id` (never a hardcoded ID — this must always be whoever is running the command), so you notice the draft is ready to review:
 
-- If Step 5 succeeded: a single short line, e.g. `EOD draft ready for review in #software-eod.` No other content, no repeating the report.
-- If Step 5 hit `draft_already_exists`: instead send `EOD draft blocked — an unsent draft is already in #software-eod. Clear or send it, then rerun /eod.`
+- If Step 5 succeeded: a single short line, e.g. `EOD draft ready for review in today's EOD thread: https://lw.slack.com/archives/C0C19DQ96AE/p<PING_TS without the dot>`. No other content, no repeating the report.
+- If Step 5 hit `attached_draft_exists` (or `draft_already_exists`): instead send `EOD draft blocked — an unsent draft already exists in #pod-commerce-solutions-internal. Clear or send it, then rerun /eod.`
+- If Step 5 found no ping today: instead send `EOD draft not created — today's EOD ping isn't in #pod-commerce-solutions-internal yet. Rerun /eod after it posts.`
 
 This DM is a notification only — never put ticket details, summaries, or report content in it, and never send it to any channel other than your own DM (the current-user ID from Step 0).
 
 ## Step 7 — Record the run and clear the log
 
-Only do this if Step 5 created the draft. If Step 5 hit `draft_already_exists` or failed in any other way, skip this step entirely, so the next run still covers the same window and the same log entries.
+Only do this if Step 5 created the draft. If Step 5 found no ping, hit `attached_draft_exists`, or failed in any other way, skip this step entirely, so the next run still covers the same window and the same log entries.
 
 Run the record script with the literal `RUN_START` value from Step 1, as a single command on its own (don't chain anything before or after it, so it matches the permission allowlist and runs without a prompt):
 

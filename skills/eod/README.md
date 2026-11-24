@@ -1,6 +1,6 @@
 # eod
 
-The `/eod` Claude Code skill: builds an end-of-day report covering everything since the previous `/eod` run, then saves it as a Slack **draft** in #software-eod for review. It never sends the report itself. It only runs when you type `/eod`; Claude won't start it on its own.
+The `/eod` Claude Code skill: builds an end-of-day report covering everything since the previous `/eod` run, then saves it as a Slack **draft** reply in the thread of today's EOD ping (the Slackbot "slack-UP time" reminder) in #pod-commerce-solutions-internal for review. If today's ping hasn't posted yet, it drafts nothing and tells you to rerun later. It never sends the report itself. It only runs when you type `/eod`; Claude won't start it on its own.
 
 The report pulls from four sources:
 
@@ -47,7 +47,7 @@ The installer doesn't touch `settings.json`. Merge the `permissions.allow` entri
 
 - macOS (the date conversions use BSD `date -j`).
 - These claude.ai connectors, connected via `/mcp`:
-  - **Slack:** drafts the report, reads your profile and searches your messages.
+  - **Slack:** finds today's EOD ping, drafts the report in its thread, reads your profile and searches your messages.
   - **Google Calendar:** lists meetings.
   - **Linear:** looks up each issue's project name, read-only.
 
