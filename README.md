@@ -26,13 +26,14 @@ skills also start on their own when your request matches them.
 
 | Skill | What it does |
 |---|---|
-| [`eod`](skills/eod/README.md) | `/eod`: end-of-day report saved as a Slack draft in `#software-eod` |
+| [`eod`](skills/eod/README.md) | `/eod`: end-of-day report saved as a Slack draft reply in the daily EOD ping thread |
 | [`candidate-interview-prep`](skills/candidate-interview-prep/README.md) | Interview prep for engineering candidates: PDF report plus an interactive HTML page |
 
 ### `eod`
 
 Builds an end-of-day report covering everything since your last `/eod` run and saves it
-as a Slack **draft** (never auto-sent) in `#software-eod`. It pulls from:
+as a Slack **draft** (never auto-sent) replying in the thread of the day's EOD ping (the Slackbot
+"slack-UP time" reminder) in `#pod-commerce-solutions-internal`. It pulls from:
 - a log of Linear issues Claude records as you work on them
 - your local Claude Code session transcripts
 - substantial Slack conversations you took part in
@@ -47,8 +48,10 @@ The report is grouped by project under TODAY, FLAGS and NEXT. It only runs when 
 - **Permissions:** merge them from `skills/eod/settings.sample.json` into
   `~/.claude/settings.json` by hand.
 - **Requirements:** macOS, and the Slack, Google Calendar and Linear connectors (`/mcp`).
-- **Channel:** `#software-eod` is hardcoded. Change the `channel_id` in `SKILL.md` if you
-  adapt it for another team.
+- **Channel:** `#pod-commerce-solutions-internal` (`C0C19DQ96AE`) and the ping text
+  (`slack-UP time`) are hardcoded in Step 5 of `SKILL.md`. Change them if you adapt it for
+  another team. Run `/eod` after the ping posts (around 4pm ET); before that, it drafts
+  nothing.
 
 ### `candidate-interview-prep`
 
